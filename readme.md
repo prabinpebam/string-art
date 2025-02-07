@@ -3,6 +3,9 @@ by Prabin Pebam
 
 This project generates string art from an input image by simulating the process of drawing continuous chords between pins arranged on a circle. The resulting artwork is a visual approximation of the original image, rendered on an HTML canvas.
 
+![String art examples](/images/String-art-example.png "String art examples")
+![String art UI](/images/string-art-ui.png "String art UI")
+
 ## How It Works
 
 1. **Image Processing:**
@@ -41,6 +44,8 @@ This project generates string art from an input image by simulating the process 
   The chord selection process is performed in asynchronous chunks to keep the UI responsive, with a progress bar displayed during generation.
 
 - **Download Options:**  
-  Users can download the generated chord steps as a text file or export the final string art as an SVG.
+  Users can download the generated chord-steps as a text file which will give them sequential steps that you can follow in order to do an actual string art physically.
+  
+  Users can also export the final string art as an SVG.
 
 This approach combines creative coding techniques with modern web technologies to produce a dynamic and interactive string art generator.
