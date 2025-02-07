@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>String art generator</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Cropper.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+    /* Left canvas area fills remaining space */
+    #canvas-wrapper {
+      margin-right: 400px; /* Reserve space for control pane */
+      height: 100vh;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+    }
+    /* The canvas always remains square with a minimum size */
+    #art-canvas {
+      background-color: #fff;
+      min-width: 480px;
+      min-height: 480px;
+    }
+    /* Right control pane is fixed and scrollable */
+    #control-pane {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 400px;
+      background-color: #f8f9fa;
+      border-left: 1px solid #ccc;
+      padding: 15px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    /* Modal body: force a minimum height and constrain maximum height */
+    .modal-body {
+      min-height: 600px;
+      max-height: 80vh;
+      overflow: hidden;
+    }
+    /* Crop image takes up full modal-body space */
+    #cropImage {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: grayscale(100%);
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas Area -->
+  <div id="canvas-wrapper">
+    <canvas id="art-canvas"></canvas>
+  </div>
+  <!-- Right Control Pane -->
+  <div id="control-pane">
+    <h3>String art generator</h3>
+    <div>by Prabin Pebam</div>
+    <hr>
+    <div class="mb-3">
+      <label for="imageUpload" class="form-label">Upload Image</label>
+      <input type="file" class="form-control" id="imageUpload" accept="image/*">
+    </div>
+    <!-- Dark Mode Toggle -->
+    <div class="mb-3 form-check form-switch">
+      <input class="form-check-input" type="checkbox" id="toggleDarkMode">
+      <label class="form-check-label" for="toggleDarkMode">Dark Mode</label>
+    </div>
+    <div class="mb-3">
+      <label for="numPins" class="form-label">Number of Pins</label>
+      <input type="number" class="form-control" id="numPins" value="300" min="10">
+    </div>
+    <div class="mb-3">
+      <label for="numChords" class="form-label">Number of Chords</label>
+      <input type="number" class="form-control" id="numChords" value="4000" min="100">
+    </div>
+    <div class="mb-3">
+      <label for="lineWeight" class="form-label">Line Weight</label>
+      <input type="number" class="form-control" id="lineWeight" value="20" min="1">
+    </div>
+    <div class="mb-3">
+      <button id="generateBtn" class="btn btn-primary w-100">Generate String Art</button>
+    </div>
+    <div class="mb-3">
+      <button id="downloadStepsBtn" class="btn btn-secondary w-100">Download Steps</button>
+    </div>
+    <div class="mb-3">
+      <button id="downloadSVGBtn" class="btn btn-secondary w-100">Download as SVG</button>
+    </div>
+    <!-- Progress Section (hidden when not generating) -->
+    <div class="mb-3" id="progressSection" style="display: none;">
+      <label class="form-label">Progress</label>
+      <div id="progressContainer">
+        <div class="progress">
+          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+        </div>
+        <div id="progressMessage" style="display: none; margin-top: 10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Image Cropping -->
+  <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:90%;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <img id="cropImage" src="" alt="Crop Image">
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cropConfirmBtn" class="btn btn-primary" data-bs-dismiss="modal">Crop &amp; Use Image</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <!-- Application Logic -->
+  <script src="string-art.js"></script>
+</body>
+</html>
