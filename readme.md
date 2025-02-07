@@ -6,6 +6,9 @@ This project generates string art from an input image by simulating the process 
 ![String art examples](/images/String-art-example.png "String art examples")
 ![String art UI](/images/string-art-ui.png "String art UI")
 
+Try it here
+[Try string art here](https://prabinpebam.github.io/string-art/ "String art")
+
 ## How It Works
 
 1. **Image Processing:**
