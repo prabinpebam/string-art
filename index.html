@@ -2,137 +2,131 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>String art generator</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Cropper.js CSS -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-    }
-    /* Left canvas area fills remaining space */
-    #canvas-wrapper {
-      margin-right: 400px; /* Reserve space for control pane */
-      height: 100vh;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-    }
-    /* The canvas always remains square with a minimum size */
-    #art-canvas {
-      background-color: #fff;
-      min-width: 480px;
-      min-height: 480px;
-    }
-    /* Right control pane is fixed and scrollable */
-    #control-pane {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 400px;
-      background-color: #f8f9fa;
-      border-left: 1px solid #ccc;
-      padding: 15px;
-      overflow-y: auto;
-      z-index: 1000;
-    }
-    /* Modal body: force a minimum height and constrain maximum height */
-    .modal-body {
-      min-height: 600px;
-      max-height: 80vh;
-      overflow: hidden;
-    }
-    /* Crop image takes up full modal-body space */
-    #cropImage {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: grayscale(100%);
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Turn a photo into continuous string artwork. Refine your design and download SVG artwork and pin-by-pin instructions.">
+  <title>String Studio - Image to string art</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
-  <!-- Canvas Area -->
-  <div id="canvas-wrapper">
-    <canvas id="art-canvas"></canvas>
-  </div>
-  <!-- Right Control Pane -->
-  <div id="control-pane">
-    <h3>String art generator</h3>
-    <div>by Prabin Pebam</div>
-    <hr>
-    <div class="mb-3">
-      <label for="imageUpload" class="form-label">Upload Image</label>
-      <input type="file" class="form-control" id="imageUpload" accept="image/*">
-    </div>
-    <!-- Dark Mode Toggle -->
-    <div class="mb-3 form-check form-switch">
-      <input class="form-check-input" type="checkbox" id="toggleDarkMode">
-      <label class="form-check-label" for="toggleDarkMode">Dark Mode</label>
-    </div>
-    <div class="mb-3">
-      <label for="numPins" class="form-label">Number of Pins</label>
-      <input type="number" class="form-control" id="numPins" value="300" min="10">
-    </div>
-    <div class="mb-3">
-      <label for="numChords" class="form-label">Number of Chords</label>
-      <input type="number" class="form-control" id="numChords" value="4000" min="100">
-    </div>
-    <div class="mb-3">
-      <label for="lineWeight" class="form-label">Line Weight</label>
-      <input type="number" class="form-control" id="lineWeight" value="20" min="1">
-    </div>
-    <div class="mb-3">
-      <button id="generateBtn" class="btn btn-primary w-100">Generate String Art</button>
-    </div>
-    <div class="mb-3">
-      <button id="downloadStepsBtn" class="btn btn-secondary w-100">Download Steps</button>
-    </div>
-    <div class="mb-3">
-      <button id="downloadSVGBtn" class="btn btn-secondary w-100">Download as SVG</button>
-    </div>
-    <!-- Progress Section (hidden when not generating) -->
-    <div class="mb-3" id="progressSection" style="display: none;">
-      <label class="form-label">Progress</label>
-      <div id="progressContainer">
-        <div class="progress">
-          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V4m-4 4 4-4 4 4M4 15v5h16v-5"/></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></symbol>
+    <symbol id="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  </svg>
+  <main class="studio" data-mobile-view="preview">
+    <nav class="mobile-navigation" aria-label="Studio views">
+      <button class="button button--secondary" id="previewViewButton" type="button" aria-controls="previewWorkspace" aria-pressed="true">Preview</button>
+      <button class="button button--secondary" id="settingsViewButton" type="button" aria-controls="settingsPanel" aria-pressed="false">Settings</button>
+    </nav>
+    <section class="workspace" id="previewWorkspace" aria-label="Preview workspace">
+      <div class="preview-panel">
+        <div id="canvas-wrapper" class="canvas-stage" tabindex="0" role="region" aria-label="Artwork preview" aria-describedby="previewHelp">
+          <div class="canvas-frame" id="canvasFrame" hidden><canvas id="art-canvas" width="1024" height="1024" aria-label="Cropped image and generated string artwork"></canvas></div>
+          <div class="empty-state" id="emptyState">
+            <svg class="string-art" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="45"/><path d="M50 5 76 86 7 36 93 36 24 86 50 5M24 14 93 64 7 64 76 14 50 95 24 14"/></svg>
+            <span class="eyebrow">ONE THREAD. ENDLESS POSSIBILITIES.</span>
+            <h1>Start with an image</h1>
+            <p>Turn your favorite photo into a piece of string art.</p>
+            <button class="button button--primary" id="emptyUploadButton" type="button"><svg class="icon" aria-hidden="true"><use href="#icon-upload"/></svg>Choose an image</button>
+            <span class="text-small text-muted">Drop an image here or paste with Ctrl+V / Cmd+V</span>
+          </div>
+          <div class="drop-overlay"><svg class="icon" aria-hidden="true"><use href="#icon-upload"/></svg>Drop your image here</div>
         </div>
-        <div id="progressMessage" style="display: none; margin-top: 10px;"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal for Image Cropping -->
-  <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:90%;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <img id="cropImage" src="" alt="Crop Image">
-        </div>
-        <div class="modal-footer">
-          <button type="button" id="cropConfirmBtn" class="btn btn-primary" data-bs-dismiss="modal">Crop &amp; Use Image</button>
+        <div class="preview-footer">
+          <span class="badge" id="resolutionState" aria-label="Working canvas dimensions">1024 &times; 1024</span>
+          <div class="preview-metadata"><span id="previewTitle">Your canvas</span><span aria-hidden="true">&middot;</span><span id="previewState">No image yet</span></div>
+          <div class="zoom-controls" role="group" aria-label="Preview controls">
+            <button class="button button--secondary" id="sourceButton" type="button" aria-pressed="false" disabled>Original</button>
+            <button class="button button--secondary button--icon" id="zoomOutButton" type="button" aria-label="Zoom out" disabled><svg class="icon" aria-hidden="true"><use href="#icon-minus"/></svg></button>
+            <output id="zoomValue" aria-label="Zoom relative to fit">100%</output>
+            <button class="button button--secondary button--icon" id="zoomInButton" type="button" aria-label="Zoom in" disabled><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button>
+            <button class="button button--secondary" id="zoomFitButton" type="button" disabled>Fit</button>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Cropper.js -->
+    </section>
+    <aside class="settings-panel" id="settingsPanel" aria-labelledby="settingsTitle">
+      <div class="settings-scroll">
+        <header class="app-header">
+          <a class="brand" href="./" aria-label="String Studio home, created by Prabin Pebam">
+            <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><path d="m20 3 10 31L4 15h32L10 34 20 3"/></svg>
+            <span class="brand-copy"><span>string<span class="brand-light"> / studio</span></span><span class="brand-attribution">Created by Prabin Pebam</span></span>
+          </a>
+          <button class="button button--quiet button--icon" id="themeToggle" type="button" aria-label="Switch to dark mode"><svg class="icon theme-icon--light" aria-hidden="true"><use href="#icon-moon"/></svg><svg class="icon theme-icon--dark" aria-hidden="true"><use href="#icon-sun"/></svg></button>
+        </header>
+        <h2 id="settingsTitle" class="visually-hidden">Settings</h2>
+        <form id="settingsForm">
+          <fieldset class="control-section">
+            <legend>Source image</legend>
+            <label class="upload-card" for="imageUpload">
+              <span class="upload-icon"><svg class="icon" aria-hidden="true"><use href="#icon-upload"/></svg></span>
+              <span class="upload-copy"><strong id="imageFileName">Upload image</strong><span>Choose, drop, or paste an image</span></span>
+              <input class="visually-hidden" type="file" id="imageUpload" accept="image/*,.jpg,.jpeg,.jpe,.jfif,.png,.apng,.webp,.avif,.gif,.bmp,.dib,.ico,.cur,.svg,.tif,.tiff,.heic,.heif,.hif,.jxl" aria-describedby="imageFormatsHint">
+            </label>
+            <button class="button button--quiet button--full" id="recropButton" type="button" disabled>Adjust crop</button>
+            <p class="field-hint">High-contrast portraits work well. Your image stays on this device.</p>
+            <p class="field-hint" id="imageFormatsHint">PNG, JPEG, WebP, AVIF, GIF, BMP, SVG, ICO, TIFF, and HEIC/HEIF. Other image formats depend on browser support. Paste with Ctrl+V / Cmd+V.</p>
+          </fieldset>
+          <fieldset class="control-section">
+            <legend>Construction</legend>
+            <div class="field field--inline"><label for="workingResolution">Working resolution</label><select class="input resolution-input" id="workingResolution" required aria-describedby="resolutionHint"><option value="500">500 px - Fast</option><option value="1024" selected>1K - Balanced</option><option value="2048">2K - Detail</option><option value="4096">4K - Maximum</option></select></div>
+            <p class="field-hint" id="resolutionHint">Square canvas size for generation and SVG. Higher resolutions take longer. Generate to apply changes; your crop is preserved.</p>
+            <div class="field field--inline"><label for="numPins">Number of pins</label><input class="input" type="number" id="numPins" value="300" min="10" step="1" required inputmode="numeric" aria-describedby="pinsHint"></div>
+            <p class="field-hint" id="pinsHint">Evenly spaced around a circle. More pins add detail and take longer.</p>
+            <div class="field field--inline"><label for="numChords">Number of chords</label><input class="input" type="number" id="numChords" value="4000" min="100" step="1" required inputmode="numeric" aria-describedby="chordsHint"></div>
+            <p class="field-hint" id="chordsHint">Continuous pin-to-pin connections. More chords build richer tones.</p>
+            <div class="field field--inline"><label for="lineWeight">Line weight</label><input class="input" type="number" id="lineWeight" value="20" min="1" step="1" required inputmode="numeric" aria-describedby="weightHint"></div>
+            <p class="field-hint" id="weightHint">Tone removed per chord, not stroke width. Lower values layer more thread.</p>
+          </fieldset>
+          <fieldset class="control-section">
+            <legend>Appearance</legend>
+            <div class="segmented-control" role="radiogroup" aria-label="Artwork colors">
+              <label class="segment"><input class="visually-hidden" type="radio" name="artMode" value="light" checked><span>Dark thread</span></label>
+              <label class="segment"><input class="visually-hidden" type="radio" name="artMode" value="dark"><span>Light thread</span></label>
+            </div>
+            <p class="field-hint">Dark thread targets shadows on white paper. Light thread targets highlights on dark paper. Generate to apply.</p>
+          </fieldset>
+          <details class="control-section guide">
+            <summary>From canvas to real thread</summary>
+            <div class="guide-content"><p>Choose, drop, or paste an image, crop, then generate. Download SVG for the design and steps for your pin sequence.</p><p>Pins are numbered from <strong>0</strong> at the right edge, clockwise. Each chord starts where the previous one ends.</p><p id="previewHelp">Use Original to compare with your crop. Zoom to inspect details or Fit to see the whole design.</p></div>
+          </details>
+        </form>
+      </div>
+      <div class="action-panel" id="actionPanel">
+        <p class="status-message" id="statusMessage" role="status" aria-live="polite">Choose an image to get started.</p>
+        <div id="progressSection" hidden><div class="progress-heading"><span id="progressLabel">Generating</span><output id="progressValue">0%</output></div><div class="progress-track"><div id="progressBar" class="progress-fill" role="progressbar" aria-label="Generation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div></div>
+        <button id="generateBtn" class="button button--primary button--full" type="submit" form="settingsForm" disabled><svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg>Generate string art</button>
+        <button id="stopBtn" class="button button--secondary button--full" type="button" hidden>Stop generation</button>
+        <div class="export-actions">
+          <button id="downloadSVGBtn" class="button button--secondary" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>SVG artwork</button>
+          <button id="downloadStepsBtn" class="button button--secondary" type="button" disabled>Pin steps (.txt)</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <dialog id="cropModal" class="crop-dialog" aria-labelledby="cropModalLabel">
+    <div class="dialog-heading"><div><span class="eyebrow">PREPARE YOUR IMAGE</span><h2 id="cropModalLabel">Find your composition</h2></div><button class="button button--quiet button--icon" id="cropCloseBtn" type="button" aria-label="Cancel crop"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button></div>
+    <p class="field-hint">Drag to frame your subject. Scroll or pinch to zoom. The square crop becomes your circular artwork.</p>
+    <div class="crop-stage"><img id="cropImage" alt="Image to crop"></div>
+    <p class="status-message" id="cropStatus" role="status">Loading image...</p>
+    <div class="dialog-actions"><button class="button button--secondary" id="cropCancelBtn" type="button">Cancel</button><button id="cropConfirmBtn" class="button button--primary" type="button" disabled>Crop &amp; use image</button></div>
+  </dialog>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-  <!-- Application Logic -->
+  <script src="image-import.js"></script>
   <script src="string-art.js"></script>
 </body>
 </html>
