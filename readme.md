@@ -33,7 +33,7 @@ The preview-first layout follows the companion Stipple Studio: a large preview, 
 - On smaller screens, **Preview** and **Settings** switch views while generation and export actions remain accessible.
 - Light/dark interface themes follow your system until explicitly selected; the preference is saved locally when storage is available. `?scoutTheme=light` or `?scoutTheme=dark` overrides the saved preference for that visit.
 - Interface theme and artwork colors are independent. Switching the interface theme never regenerates or recolors artwork.
-- Design tokens use the Clawpilot warm surfaces, rose accent, Segoe UI typography, restrained borders, and consistent spacing.
+- Design tokens use the Clawpilot warm surfaces, a purple brand accent, Segoe UI typography, restrained borders, and consistent spacing.
 - Generation/export controls reflect readiness and busy states. Progress and errors are announced through live status regions.
 - Canvas backing resolution follows the current crop/design, independent of display size. Resizing, zooming, or switching views does not clear the design or change export geometry. Resolution editing is disabled while generating.
 
